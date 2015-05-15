@@ -42,7 +42,7 @@ public class MyCustomAdapter extends BaseAdapter {
         if (view == null) {
             holder = new ViewHolder();
             view = mLayoutInflater.inflate(R.layout.due, null);
-            holder.itemName = (TextView) view.findViewById(R.id.due_text_view);
+            holder.itemName = (TextView) view.findViewById(R.id.tvSymbol);
             holder.imageButton = (ImageButton) view.findViewById(R.id.delete_button);
             // the setTag is used to store the data within this view
             view.setTag(holder);

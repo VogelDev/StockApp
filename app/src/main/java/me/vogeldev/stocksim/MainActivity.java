@@ -272,7 +272,7 @@ public class MainActivity extends ActionBarActivity
 
         //cursor to read todo task list from database
         Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES,
-                new String[]{TodoListSQLHelper._ID, TodoListSQLHelper.SHARES_SYMBOL},
+                null,
                 null, null, null, null, null);
 
         //binds the todo task list with the UI
@@ -280,8 +280,8 @@ public class MainActivity extends ActionBarActivity
                 this,
                 R.layout.due,
                 cursor,
-                new String[]{TodoListSQLHelper.SHARES_SYMBOL},
-                new int[]{R.id.due_text_view},
+                new String[]{TodoListSQLHelper.SHARES_SYMBOL, TodoListSQLHelper.SHARES_CURRENT},
+                new int[]{R.id.tvSymbol, R.id.tvPrice},
                 0
         );
 
@@ -292,7 +292,7 @@ public class MainActivity extends ActionBarActivity
     //closing the todo task item
     public void onDoneButtonClick(View view) {
         View v = (View) view.getParent();
-        TextView todoTV = (TextView) v.findViewById(R.id.due_text_view);
+        TextView todoTV = (TextView) v.findViewById(R.id.tvSymbol);
         String todoTaskItem = todoTV.getText().toString();
 
         String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
@@ -320,7 +320,6 @@ public class MainActivity extends ActionBarActivity
             SQLiteDatabase sqLiteDatabase = todoListSQLHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.clear();
-            String add = quote.toString();
 
             //write the Todo task input into database table
             values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());

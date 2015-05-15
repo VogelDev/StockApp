@@ -33,8 +33,8 @@ public class StockQuote {
         //loss/gain
         double difference = totalCost - (lastPrice * shares);
         
-        //return symbol + "\t" + shares + "\n" + lastPrice + "\t" + difference;
-        return symbol;
+        return symbol + "\t" + shares + "\n" + lastPrice + "\t" + difference;
+
     }
     public String getId() {
         return id;

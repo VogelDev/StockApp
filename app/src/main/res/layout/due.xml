@@ -7,8 +7,14 @@
     android:dividerPadding="8dp"
     android:gravity="center">
 
-    <!-- Dummy text view that will display the name of a random country. -->
-    <TextView android:id="@+id/due_text_view"
+    <TextView android:id="@+id/tvSymbol"
+        style="?android:textAppearanceMedium"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:paddingLeft="?android:listPreferredItemPaddingLeft" />
+
+    <TextView android:id="@+id/tvPrice"
         style="?android:textAppearanceMedium"
         android:layout_width="0dp"
         android:layout_weight="1"
