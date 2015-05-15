@@ -1,4 +1,4 @@
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

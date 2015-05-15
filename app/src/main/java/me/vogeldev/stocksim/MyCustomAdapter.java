@@ -1,4 +1,4 @@
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import chaos.list.R;
 
 public class MyCustomAdapter extends BaseAdapter {
     private ArrayList<String> mListItems;

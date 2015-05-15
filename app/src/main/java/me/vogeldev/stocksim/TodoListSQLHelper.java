@@ -1,4 +1,4 @@
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

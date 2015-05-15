@@ -1,4 +1,4 @@
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import java.io.BufferedReader;
 import java.io.IOException;

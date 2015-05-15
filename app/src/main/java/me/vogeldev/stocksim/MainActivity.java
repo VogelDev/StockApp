@@ -1,4 +1,4 @@
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import chaos.list.R;
 
 
 public class MainActivity extends ActionBarActivity

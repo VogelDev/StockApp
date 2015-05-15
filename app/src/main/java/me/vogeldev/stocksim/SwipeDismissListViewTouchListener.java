@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package chaos.list;
+package me.vogeldev.stocksim;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
