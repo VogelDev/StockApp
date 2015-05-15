@@ -18,7 +18,7 @@ public class About extends ActionBarActivity {
         mWebView = (WebView) findViewById(R.id.activity_main_webview);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        mWebView.loadUrl("http://dandroiddeveloper.github.io");
+        mWebView.loadUrl("http://www.vogeldev.me/?page_id=29");
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
