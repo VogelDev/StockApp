@@ -10,8 +10,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import chaos.list.R;
-
 public class MyCustomAdapter extends BaseAdapter {
     private ArrayList<String> mListItems;
     private LayoutInflater mLayoutInflater;

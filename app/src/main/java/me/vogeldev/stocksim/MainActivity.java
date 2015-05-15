@@ -29,8 +29,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import chaos.list.R;
-
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {

@@ -7,8 +7,6 @@ import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import chaos.list.R;
-
 public class About extends ActionBarActivity {
     private WebView mWebView;
     @Override
