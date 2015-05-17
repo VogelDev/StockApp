@@ -279,7 +279,7 @@ public class MainActivity extends ActionBarActivity
                 this,
                 R.layout.due,
                 cursor,
-                new String[]{TodoListSQLHelper.SHARES_SYMBOL, TodoListSQLHelper.SHARES_COUNT, TodoListSQLHelper.SHARES_CURRENT, TodoListSQLHelper.SHARES_TOTALCOST},
+                new String[]{TodoListSQLHelper.SHARES_SYMBOL, TodoListSQLHelper.SHARES_COUNT, TodoListSQLHelper.SHARES_CURRENT, TodoListSQLHelper.SHARES_COST},
                 new int[]{R.id.tvSymbol, R.id.tvShares, R.id.tvPrice, R.id.tvDif},
                 0
         );
@@ -307,7 +307,9 @@ public class MainActivity extends ActionBarActivity
 
     private class StockLookup extends AsyncTask<String, Integer, Long> {
         StockQuote quote;
-        protected Long doInBackground(String... symbol) {
+        protected Long doInBackground(String... symbols) {
+
+            String symbol = symbols[0].toUpperCase();
 
             todoListSQLHelper = new TodoListSQLHelper(MainActivity.this);
             SQLiteDatabase sqLiteDatabase = todoListSQLHelper.getWritableDatabase();
@@ -315,31 +317,38 @@ public class MainActivity extends ActionBarActivity
             values.clear();
             long success = 0l;
 
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = " + symbol[0], null, null, null, null );
+            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + symbol +"'", null, null, null, null );
 
             if(cursor.getCount() == 0){
-                quote = StockFinder.getQuote(symbol[0]);
+                quote = StockFinder.getQuote(symbol);
+
+                if(quote == null)
+                    return success;
+
+                quote.addShares(1, quote.getLastPrice());
             }else{
+                cursor.moveToFirst();
                 String sym = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_SYMBOL));
                 double price = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_CURRENT));
                 String trade = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_LASTCHECK));
+                int count = cursor.getInt(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COUNT));
+                double total = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COST));
                 quote = new StockQuote(sym, price, trade);
+                quote.setShares(count);
+                quote.setTotalCost(total * count);
                 quote.addShares(1, price);
 
                 String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
                         " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + sym + "'";
+                sqLiteDatabase.execSQL(deleteTodoItemSql);
             }
-
-
-            if(quote == null)
-                return success;
 
             //write the stock info to the database
             values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());
             values.put(TodoListSQLHelper.SHARES_CURRENT, quote.getLastPrice());
             values.put(TodoListSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
             values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
-            values.put(TodoListSQLHelper.SHARES_TOTALCOST, quote.getTotalCost());
+            values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
             sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
             success = 1l;
             return success;

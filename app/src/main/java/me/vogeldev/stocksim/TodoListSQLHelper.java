@@ -13,18 +13,18 @@ public class TodoListSQLHelper extends SQLiteOpenHelper {
     public static final String SHARES_CURRENT = "CURRENT";
     public static final String SHARES_LASTCHECK = "LASTCHECK";
     public static final String SHARES_COUNT = "SHARES";
-    public static final String SHARES_TOTALCOST = "TOTALCOST";
+    public static final String SHARES_COST = "COST";
     public static final String _ID = BaseColumns._ID;
 
     public TodoListSQLHelper(Context context) {
         //1 is database version
-        super(context, DB_NAME, null, 2);
+        super(context, DB_NAME, null, 3);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqlDB) {
         String createSharesTable = "CREATE TABLE " + TABLE_SHARES + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                SHARES_SYMBOL + " TEXT, " + SHARES_CURRENT + " NUMBER, " + SHARES_LASTCHECK + " TEXT, " + SHARES_COUNT + " INTEGER, " + SHARES_TOTALCOST + " NUMBER)";
+                SHARES_SYMBOL + " TEXT, " + SHARES_CURRENT + " NUMBER, " + SHARES_LASTCHECK + " TEXT, " + SHARES_COUNT + " INTEGER, " + SHARES_COST + " NUMBER)";
 
         sqlDB.execSQL(createSharesTable);
     }

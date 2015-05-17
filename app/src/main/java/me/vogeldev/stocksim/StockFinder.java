@@ -66,7 +66,7 @@ public class StockFinder {
             reader.close();
             
             //create the StockQuote object and return it
-            stock = new StockQuote(id, symb, lastPrice, lastTrade);
+            stock = new StockQuote(symb, lastPrice, lastTrade);
             return stock;
 
         } catch (Exception e) {

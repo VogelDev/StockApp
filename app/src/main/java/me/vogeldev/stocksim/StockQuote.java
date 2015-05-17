@@ -15,11 +15,16 @@ public class StockQuote {
     private double totalCost;
     //Average share worth;
     private double sharePrice;
-    
+
+    public void setTotalCost(double totalCost) {
+        this.totalCost = totalCost;
+    }
+
     /**
      * Creates new object with initial data.
      */
     public StockQuote(String symbol, double lastPrice, String lastTrade){
+
         this.symbol = symbol;
         this.lastPrice = lastPrice;
         this.lastTrade = lastTrade;
