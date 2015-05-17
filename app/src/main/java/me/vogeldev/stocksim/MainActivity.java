@@ -56,6 +56,7 @@ public class MainActivity extends ActionBarActivity
 
         myList = (ListView) findViewById(R.id.list);
         ImageButton fabImageButton = (ImageButton) findViewById(R.id.fab_image_button);
+        ImageButton btnRefresh = (ImageButton) findViewById(R.id.btnRefresh);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -96,6 +97,13 @@ public class MainActivity extends ActionBarActivity
         // Setting this scroll listener is required to ensure that during ListView scrolling,
         // we don't look for swipes.
         // findViewById(R.id.list).setOnScrollListener(touchListener.makeScrollListener());
+
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new StockUpdate().execute(new String[0]);
+            }
+        });
 
         fabImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -328,12 +336,13 @@ public class MainActivity extends ActionBarActivity
                 quote.addShares(1, quote.getLastPrice());
             }else{
                 cursor.moveToFirst();
+                String name = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_NAME));
                 String sym = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_SYMBOL));
                 double price = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_CURRENT));
                 String trade = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_LASTCHECK));
                 int count = cursor.getInt(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COUNT));
                 double total = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COST));
-                quote = new StockQuote(sym, price, trade);
+                quote = new StockQuote(name, sym, price, trade);
                 quote.setShares(count);
                 quote.setTotalCost(total * count);
                 quote.addShares(1, price);
@@ -344,6 +353,7 @@ public class MainActivity extends ActionBarActivity
             }
 
             //write the stock info to the database
+            values.put(TodoListSQLHelper.SHARES_NAME, quote.getName());
             values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());
             values.put(TodoListSQLHelper.SHARES_CURRENT, quote.getLastPrice());
             values.put(TodoListSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
@@ -366,4 +376,80 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    private class StockUpdate extends AsyncTask<String, Integer, Long>{
+
+        protected Long doInBackground(String... param) {
+            StockQuote quoteOld, quoteNew;
+            StockQuote[] stocks;
+            todoListSQLHelper = new TodoListSQLHelper(MainActivity.this);
+            SQLiteDatabase sqLiteDatabase = todoListSQLHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.clear();
+            long success = 0l;
+
+            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, null, null, null, null, null );
+
+            if(cursor.getCount() == 0){
+                return success;
+            }else{
+                stocks = new StockQuote[cursor.getCount()];
+                cursor.moveToFirst();
+                do {
+                    String name = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_NAME));
+                    String sym = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_SYMBOL));
+                    double price = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_CURRENT));
+                    String trade = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_LASTCHECK));
+                    int count = cursor.getInt(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COUNT));
+                    double total = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COST));
+                    quoteOld = new StockQuote(name, sym, price, trade);
+                    quoteOld.setShares(count);
+                    quoteOld.setTotalCost(total * count);
+
+                    quoteNew = StockFinder.getQuote(sym);
+
+                    if (quoteNew == null)
+                        return success;
+
+                    quoteOld.setLastPrice(quoteNew.getLastPrice());
+                    quoteOld.setLastTrade(quoteNew.getLastTrade());
+
+                    String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
+                            " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + sym + "'";
+                    sqLiteDatabase.execSQL(deleteTodoItemSql);
+
+                    stocks[cursor.getPosition()] = quoteOld;
+
+                    cursor.moveToNext();
+                }while(!cursor.isAfterLast());
+            }
+
+            for(StockQuote quote: stocks){
+                //write the stock info to the database
+                values.put(TodoListSQLHelper.SHARES_NAME, quote.getName());
+                values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());
+                values.put(TodoListSQLHelper.SHARES_CURRENT, quote.getLastPrice());
+                values.put(TodoListSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
+                values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
+                values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
+                sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+            }
+
+            success = 1l;
+            return success;
+        }
+
+        protected void onProgressUpdate(Integer... params) {
+        }
+
+        protected void onPostExecute(Long result) {
+            if(result == 1) {
+                updateTodoList();
+                Toast.makeText(getBaseContext(), "Updated", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(getBaseContext(), "Error Updating", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }
