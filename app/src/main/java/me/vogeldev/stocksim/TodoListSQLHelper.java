@@ -12,25 +12,21 @@ public class TodoListSQLHelper extends SQLiteOpenHelper {
     public static final String SHARES_SYMBOL = "SYMBOL";
     public static final String SHARES_CURRENT = "CURRENT";
     public static final String SHARES_LASTCHECK = "LASTCHECK";
-    public static final String TABLE_PLAYER = "PLAYER";
-    public static final String PLAYER_SYMBOL = "SYMBOL";
-    public static final String PLAYER_SHARES = "SHARES";
-    public static final String PLAYER_TOTALCOST = "TOTALCOST";
+    public static final String SHARES_COUNT = "SHARES";
+    public static final String SHARES_TOTALCOST = "TOTALCOST";
     public static final String _ID = BaseColumns._ID;
 
     public TodoListSQLHelper(Context context) {
         //1 is database version
-        super(context, DB_NAME, null, 1);
+        super(context, DB_NAME, null, 2);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqlDB) {
         String createSharesTable = "CREATE TABLE " + TABLE_SHARES + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                SHARES_SYMBOL + " TEXT, " + SHARES_CURRENT + " NUMBER, " + SHARES_LASTCHECK + " TEXT)";
-        String createPlayerTable = "CREATE TABLE " + TABLE_PLAYER + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                PLAYER_SYMBOL + " TEXT, " + PLAYER_SHARES + " INTEGER, " + PLAYER_TOTALCOST + " NUMBER)";
+                SHARES_SYMBOL + " TEXT, " + SHARES_CURRENT + " NUMBER, " + SHARES_LASTCHECK + " TEXT, " + SHARES_COUNT + " INTEGER, " + SHARES_TOTALCOST + " NUMBER)";
+
         sqlDB.execSQL(createSharesTable);
-        sqlDB.execSQL(createPlayerTable);
     }
 
     @Override

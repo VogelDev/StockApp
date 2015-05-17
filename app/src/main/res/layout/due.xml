@@ -14,7 +14,21 @@
         android:layout_height="wrap_content"
         android:paddingLeft="?android:listPreferredItemPaddingLeft" />
 
+    <TextView android:id="@+id/tvShares"
+        style="?android:textAppearanceMedium"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:paddingLeft="?android:listPreferredItemPaddingLeft" />
+
     <TextView android:id="@+id/tvPrice"
+        style="?android:textAppearanceMedium"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:paddingLeft="?android:listPreferredItemPaddingLeft" />
+
+    <TextView android:id="@+id/tvDif"
         style="?android:textAppearanceMedium"
         android:layout_width="0dp"
         android:layout_weight="1"

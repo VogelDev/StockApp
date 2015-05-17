@@ -19,8 +19,7 @@ public class StockQuote {
     /**
      * Creates new object with initial data.
      */
-    public StockQuote(String id, String symbol, double lastPrice, String lastTrade){
-        this.id = id;
+    public StockQuote(String symbol, double lastPrice, String lastTrade){
         this.symbol = symbol;
         this.lastPrice = lastPrice;
         this.lastTrade = lastTrade;
@@ -66,6 +65,7 @@ public class StockQuote {
     public void setShares(int shares){
         this.shares = shares;
     }
+    public double getTotalCost(){return totalCost;}
     public void addShares(int shares, double price){
         
         this.shares += shares;
