@@ -6,9 +6,9 @@ import yahoofinance.YahooFinance;
 public class StockFinder {
 
     /**
-     * Searches Google Finance for the stock symbol given
-     * @param symbol
-     * @return
+     * Searches Yahoo Finance for the stock symbol given
+     * @param symbol Symbol of the stock to be searched for
+     * @return Returns a StockQuote containing the queried information
      * 
      */
     public static StockQuote getQuote(String symbol) {
@@ -19,8 +19,6 @@ public class StockFinder {
         double price = stock.getQuote().getPrice().doubleValue();
         String date = stock.getQuote().getLastTradeTime().getTime().toString();
 
-        StockQuote quote = new StockQuote(name, sym, price, date);
-
-        return quote;
+        return new StockQuote(name, sym, price, date);
     }
 }

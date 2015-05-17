@@ -101,7 +101,7 @@ public class MainActivity extends ActionBarActivity
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new StockUpdate().execute(new String[0]);
+                new StockUpdate().execute();
             }
         });
 
@@ -212,7 +212,7 @@ public class MainActivity extends ActionBarActivity
 
                     new StockLookup().execute(todoTaskInput);
 
-                    //update the Todo task list UI
+                    //update the list UI
                     updateTodoList();
 
                 }
@@ -263,8 +263,7 @@ public class MainActivity extends ActionBarActivity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_main, container, false);
         }
 
         @Override
@@ -294,9 +293,10 @@ public class MainActivity extends ActionBarActivity
 
         myList.setAdapter(todoListAdapter);
         sqLiteDatabase.close();
+        cursor.close();
     }
 
-    //closing the todo task item
+    //closing the item
     public void onDoneButtonClick(View view) {
         View v = (View) view.getParent();
         TextView todoTV = (TextView) v.findViewById(R.id.tvSymbol);
@@ -360,6 +360,8 @@ public class MainActivity extends ActionBarActivity
             values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
             values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
             sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            sqLiteDatabase.close();
+            cursor.close();
             success = 1l;
             return success;
         }
@@ -422,7 +424,7 @@ public class MainActivity extends ActionBarActivity
                     cursor.moveToNext();
                 }while(!cursor.isAfterLast());
             }
-
+            cursor.close();
             for(StockQuote quote: stocks){
                 //write the stock info to the database
                 values.put(TodoListSQLHelper.SHARES_NAME, quote.getName());
@@ -435,6 +437,7 @@ public class MainActivity extends ActionBarActivity
 
             }
 
+            sqLiteDatabase.close();
             success = 1l;
             return success;
         }
