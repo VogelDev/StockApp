@@ -14,6 +14,10 @@ public class StockFinder {
     public static StockQuote getQuote(String symbol) {
 
         Stock stock = YahooFinance.get(symbol);
+
+        if(stock == null)
+            return null;
+
         String name = stock.getName();
         String sym = stock.getSymbol();
         double price = stock.getQuote().getPrice().doubleValue();

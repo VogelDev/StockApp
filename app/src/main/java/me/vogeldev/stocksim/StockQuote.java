@@ -31,6 +31,7 @@ public class StockQuote {
         this.lastPrice = lastPrice;
         this.lastTrade = lastTrade;
         shares = 0;
+        totalCost = 0;
     }
 
     @Override
@@ -111,5 +112,13 @@ public class StockQuote {
         sharePrice = totalCost / this.shares;
 
         return worth;
+    }
+
+    public void setSharePrice(){
+        sharePrice = totalCost / shares;
+    }
+
+    public double getSharePrice(){
+        return sharePrice;
     }
 }

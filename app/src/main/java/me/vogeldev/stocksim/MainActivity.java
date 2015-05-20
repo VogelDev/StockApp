@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
@@ -108,6 +109,7 @@ public class MainActivity extends ActionBarActivity
         fabImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
                 list.add("New Item");
                 adapter.notifyDataSetChanged();
                 AlertDialog.Builder todoTaskBuilder = new AlertDialog.Builder(MainActivity.this);
@@ -127,7 +129,25 @@ public class MainActivity extends ActionBarActivity
                 todoTaskBuilder.setNegativeButton("Cancel", null);
 
                 todoTaskBuilder.create().show();
+                */
+                Intent i = new Intent(MainActivity.this, AddStock.class);
+                startActivityForResult(i, 0);
             }
+        });
+
+        myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                TextView tvStock = (TextView)view;
+
+                Bundle bundle = new Bundle();
+                bundle.putString("Name", tvStock.getText().toString());
+                Intent i = new Intent(MainActivity.this, AddStock.class);
+                startActivityForResult(i, 0, bundle);
+            }
+
         });
 
         //show the ListView on the screen
@@ -232,7 +252,13 @@ public class MainActivity extends ActionBarActivity
 
         }
         return super.onOptionsItemSelected(item);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+
+        updateTodoList();
     }
 
     /**
@@ -292,8 +318,8 @@ public class MainActivity extends ActionBarActivity
         );
 
         myList.setAdapter(todoListAdapter);
-        sqLiteDatabase.close();
-        cursor.close();
+        //sqLiteDatabase.close();
+        //cursor.close();
     }
 
     //closing the item

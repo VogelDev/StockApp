@@ -7,7 +7,7 @@ import android.provider.BaseColumns;
 
 public class TodoListSQLHelper extends SQLiteOpenHelper {
 
-    public static final String DB_NAME = "chaos.list.db";
+    public static final String DB_NAME = "me.vogeldev.stocksim.db";
     public static final String TABLE_SHARES = "SHARES";
     public static final String SHARES_NAME = "NAME";
     public static final String SHARES_SYMBOL = "SYMBOL";
@@ -19,7 +19,7 @@ public class TodoListSQLHelper extends SQLiteOpenHelper {
 
     public TodoListSQLHelper(Context context) {
         //1 is database version
-        super(context, DB_NAME, null, 4);
+        super(context, DB_NAME, null, 1);
     }
 
     @Override

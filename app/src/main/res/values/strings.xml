@@ -11,4 +11,7 @@
 
     <string name="action_settings">Add</string>
     <string name="title_activity_about">About</string>
+    <string name="title_activity_add_stock">AddStock</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>
