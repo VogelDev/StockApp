@@ -166,13 +166,13 @@ public class MainActivity extends ActionBarActivity
 
                     sqlDB.insertWithOnConflict(TodoListSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                     sqlDB.close();
+
+                    updateTodoList();
                 }
             });
             cursor.close();
 
             alert.create().show();
-
-            updateTodoList();
         }
     }
 
