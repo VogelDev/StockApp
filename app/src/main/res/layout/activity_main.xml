@@ -14,7 +14,10 @@
             android:layout_height="match_parent"
             android:id="@+id/list"
             android:layout_weight="1"
-            android:layout_margin="5dp"/>
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_below="@+id/tvName"
+            android:layout_above="@+id/btnRefresh" />
 
         <ImageButton
             android:id="@+id/btnRefresh"
@@ -34,7 +37,7 @@
             android:id="@+id/fab_image_button"
             android:layout_width="@dimen/btnDiameter"
             android:layout_height="@dimen/btnDiameter"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="@dimen/btnMargin"
             android:layout_marginRight="@dimen/btnMargin"
@@ -43,6 +46,25 @@
             android:tint="@android:color/white"
             android:elevation="@dimen/elevation_low"
             android:stateListAnimator="@anim/button_elevation"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:id="@+id/tvName"
+            android:elevation="@dimen/elevation_low"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:id="@+id/tvMoney"
+            android:elevation="@dimen/elevation_low"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true" />
 
     </RelativeLayout>
 

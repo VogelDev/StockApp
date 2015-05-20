@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">List</string>
+    <string name="app_name">StockApp</string>
 
-    <string name="title_section1">List</string>
+    <string name="title_section1">Stock List</string>
     <string name="title_section2">About</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>

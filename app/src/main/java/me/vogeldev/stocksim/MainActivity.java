@@ -28,6 +28,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 
@@ -109,31 +110,11 @@ public class MainActivity extends ActionBarActivity
         fabImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                list.add("New Item");
-                adapter.notifyDataSetChanged();
-                AlertDialog.Builder todoTaskBuilder = new AlertDialog.Builder(MainActivity.this);
-                todoTaskBuilder.setTitle("Add Todo Task Item");
-                todoTaskBuilder.setMessage("describe the Todo task...");
-                final EditText todoET = new EditText(MainActivity.this);
-                todoTaskBuilder.setView(todoET);
-                AlertDialog.Builder builder = todoTaskBuilder.setPositiveButton("Add Task", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String todoTaskInput = todoET.getText().toString();
-
-                        new StockLookup().execute(todoTaskInput);
-                    }
-                });
-
-                todoTaskBuilder.setNegativeButton("Cancel", null);
-
-                todoTaskBuilder.create().show();
-                */
                 Intent i = new Intent(MainActivity.this, AddStock.class);
                 startActivityForResult(i, 0);
             }
         });
+
 
         myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -155,6 +136,44 @@ public class MainActivity extends ActionBarActivity
         // a view to represent an item in that data set.
 
         updateTodoList();
+        checkLogin();
+    }
+
+    private void checkLogin(){
+
+        todoListSQLHelper = new TodoListSQLHelper(MainActivity.this);
+        final SQLiteDatabase sqlDB = todoListSQLHelper.getWritableDatabase();
+        String query = "SELECT * FROM " + TodoListSQLHelper.TABLE_PLAYER;
+        Cursor cursor = sqlDB.rawQuery(query, null);
+        cursor.moveToFirst();
+        if(cursor.getCount()==0){
+            AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+            alert.setTitle("Login");
+            alert.setMessage("What is your name?");
+            final EditText todoET = new EditText(MainActivity.this);
+            alert.setView(todoET);
+
+            alert.setPositiveButton("Enter Name", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String name = todoET.getText().toString();
+
+                    ContentValues values = new ContentValues();
+                    values.clear();
+
+                    values.put(TodoListSQLHelper.PLAYER_NAME, name);
+                    values.put(TodoListSQLHelper.PLAYER_MONEY, 10000);
+
+                    sqlDB.insertWithOnConflict(TodoListSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    sqlDB.close();
+                }
+            });
+            cursor.close();
+
+            alert.create().show();
+
+            updateTodoList();
+        }
     }
 
     @Override
@@ -318,8 +337,21 @@ public class MainActivity extends ActionBarActivity
         );
 
         myList.setAdapter(todoListAdapter);
-        //sqLiteDatabase.close();
-        //cursor.close();
+
+        cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
+
+        if(cursor.getCount() != 0){
+            cursor.moveToFirst();
+
+            TextView tvName = (TextView) findViewById(R.id.tvName);
+            TextView tvMoney = (TextView) findViewById(R.id.tvMoney);
+
+            tvName.setText(cursor.getString(1));
+
+            double money = cursor.getDouble(2);
+            DecimalFormat formatter = new DecimalFormat("$#,###.00");
+            tvMoney.setText(formatter.format(money));
+        }
     }
 
     //closing the item
