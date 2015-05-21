@@ -1,5 +1,9 @@
 package me.vogeldev.stocksim;
 
+
+
+import android.util.Log;
+
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 
@@ -15,7 +19,12 @@ public class StockFinder {
 
         Stock stock = YahooFinance.get(symbol);
 
+        Log.i("added", stock.getName());
+
         if(stock == null)
+            return null;
+
+        if(stock.getName().equals("N/A"))
             return null;
 
         String name = stock.getName();
