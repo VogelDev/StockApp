@@ -17,6 +17,9 @@ public class StockFinder {
      */
     public static StockQuote getQuote(String symbol) {
 
+        if(symbol.length() == 0)
+            return null;
+
         Stock stock = YahooFinance.get(symbol);
 
         Log.i("added", stock.getName());
