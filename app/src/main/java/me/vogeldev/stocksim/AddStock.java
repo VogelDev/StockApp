@@ -101,13 +101,14 @@ public class AddStock extends Activity implements OnClickListener {
 
                 break;
             case R.id.infoSell:
+                new StockSell().execute(new String[]{etSearch.getText().toString()});
 
                 break;
         }
 
         etShares.setText(String.valueOf(shares));
 
-        if(change && quote != null) {
+        if (change && quote != null) {
             setSell(shares, quote.getLastPrice());
             setBuy(shares, quote.getLastPrice());
         }
@@ -125,44 +126,69 @@ public class AddStock extends Activity implements OnClickListener {
         tvBuy.setText(formatter.format(buy));
     }
 
-    private class StockUpdate extends AsyncTask<String, Integer, Long> {
+    private void update(){
+        tvName.setText(quote.getName());
+        tvPrice.setText(formatter.format(quote.getLastPrice()));
+        tvOwned.setText(String.valueOf(quote.getShares()));
+        tvCost.setText(formatter.format(quote.getSharePrice()));
+
+        double difference = quote.getSharePrice() - quote.getLastPrice();
+        tvDif.setText((formatter.format(difference)));
+
+        if (difference < 0)
+            tvDif.setTextColor(Color.RED);
+
+
+        int shares = Integer.valueOf(etShares.getText().toString());
+        setBuy(shares, quote.getLastPrice());
+        setSell(shares, quote.getLastPrice());
+    }
+
+    private class StockSell extends AsyncTask<String, Integer, Long> {
         TodoListSQLHelper sqlHelper;
+        String error;
 
         protected Long doInBackground(String... symbols) {
 
-            String symbol = symbols[0].toUpperCase();
+            long success = 0l;
+
+            if (quote == null)
+                return success;
 
             sqlHelper = new TodoListSQLHelper(AddStock.this);
             SQLiteDatabase sqLiteDatabase = sqlHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
-            values.clear();
-            long success = 0l;
 
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + symbol + "'", null, null, null, null);
+            int shares = Integer.valueOf(etShares.getText().toString());
 
-            if (cursor.getCount() == 0) {
-                quote = StockFinder.getQuote(symbol);
-
-                if (quote == null)
-                    return success;
-
-                quote.addShares(1, quote.getLastPrice());
+            if (quote.getShares() >= shares) {
+                addMoney(values, sqLiteDatabase, shares);
+                updateStock(values, sqLiteDatabase, shares);
+                success = 1l;
             } else {
-                cursor.moveToFirst();
-                String name = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_NAME));
-                String sym = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_SYMBOL));
-                double price = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_CURRENT));
-                String trade = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_LASTCHECK));
-                int count = cursor.getInt(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COUNT));
-                double total = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COST));
-                quote = new StockQuote(name, sym, price, trade);
-                quote.setShares(count);
-                quote.setTotalCost(total * count);
-                quote.addShares(1, price);
+                return 2l;
+            }
 
-                String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
-                        " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + sym + "'";
-                sqLiteDatabase.execSQL(deleteTodoItemSql);
+            sqLiteDatabase.close();
+
+            return success;
+        }
+
+        private void updateStock(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) {
+
+            values.clear();
+
+            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + quote.getSymbol() + "'", null, null, null, null);
+
+            quote.sellShares(shares);
+
+            String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
+                    " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + quote.getSymbol() + "'";
+            sqLiteDatabase.execSQL(deleteTodoItemSql);
+
+            if (quote.getShares() == 0) {
+                cursor.close();
+                return;
             }
 
             //write the stock info to the database
@@ -173,10 +199,31 @@ public class AddStock extends Activity implements OnClickListener {
             values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
             values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
             sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-            sqLiteDatabase.close();
+
             cursor.close();
-            success = 1l;
-            return success;
+
+        }
+
+        private void addMoney(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) {
+            values.clear();
+            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
+
+            cursor.moveToFirst();
+
+            double money = cursor.getDouble(2);
+            money += quote.getLastPrice() * shares;
+
+            String name = cursor.getString(1);
+
+            String deleteOld = "DELETE FROM " + TodoListSQLHelper.TABLE_PLAYER +
+                    " WHERE " + TodoListSQLHelper.PLAYER_NAME + " = '" + name + "'";
+            sqLiteDatabase.execSQL(deleteOld);
+
+            values.put(TodoListSQLHelper.PLAYER_NAME, name);
+            values.put(TodoListSQLHelper.PLAYER_MONEY, money);
+            sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+            cursor.close();
         }
 
         protected void onProgressUpdate(Integer... progress) {
@@ -184,13 +231,11 @@ public class AddStock extends Activity implements OnClickListener {
 
         protected void onPostExecute(Long result) {
             if (result == 1) {
-                tvName.setText(quote.getName());
-                tvPrice.setText(formatter.format(quote.getLastPrice()));
-                int shares = Integer.valueOf(etShares.getText().toString());
-                setBuy(shares, quote.getLastPrice());
-                setSell(shares, quote.getLastPrice());
-            } else {
-                Toast.makeText(getBaseContext(), "Error finding stock", Toast.LENGTH_LONG).show();
+                update();
+            } else if (result == 0) {
+                Toast.makeText(getBaseContext(), "Error - Search for a stock first.", Toast.LENGTH_LONG).show();
+            } else if (result == 2) {
+                Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -240,21 +285,7 @@ public class AddStock extends Activity implements OnClickListener {
 
         protected void onPostExecute(Long result) {
             if (result == 1) {
-                tvName.setText(quote.getName());
-                tvPrice.setText(formatter.format(quote.getLastPrice()));
-                tvOwned.setText(String.valueOf(quote.getShares()));
-                tvCost.setText(formatter.format(quote.getSharePrice()));
-
-                double difference = quote.getSharePrice() - quote.getLastPrice();
-                tvDif.setText((formatter.format(difference)));
-
-                if(difference < 0)
-                    tvDif.setTextColor(Color.RED);
-
-
-                int shares = Integer.valueOf(etShares.getText().toString());
-                setBuy(shares, quote.getLastPrice());
-                setSell(shares, quote.getLastPrice());
+                update();
             } else {
                 Toast.makeText(getBaseContext(), "Error finding stock", Toast.LENGTH_LONG).show();
             }
@@ -282,17 +313,17 @@ public class AddStock extends Activity implements OnClickListener {
                 subMoney(values, sqLiteDatabase, shares);
                 updateStock(values, sqLiteDatabase, shares);
                 success = 1l;
-            }catch(Exception e){
+            } catch (Exception e) {
                 error = e.getMessage();
                 success = 2l;
-            }finally{
+            } finally {
                 sqLiteDatabase.close();
             }
 
             return success;
         }
 
-        private void updateStock(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares){
+        private void updateStock(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) {
 
             values.clear();
 
@@ -321,7 +352,7 @@ public class AddStock extends Activity implements OnClickListener {
 
         }
 
-        private void subMoney(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) throws Exception{
+        private void subMoney(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) throws Exception {
             values.clear();
             Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
 
@@ -330,7 +361,7 @@ public class AddStock extends Activity implements OnClickListener {
             double money = cursor.getDouble(2);
             money -= quote.getLastPrice() * shares;
 
-            if(money < 0){
+            if (money < 0) {
                 cursor.close();
                 throw new Exception("Not enough money.");
             }
@@ -353,20 +384,12 @@ public class AddStock extends Activity implements OnClickListener {
 
         protected void onPostExecute(Long result) {
             if (result == 1) {
-                tvName.setText(quote.getName());
-                tvPrice.setText(formatter.format(quote.getLastPrice()));
-
-
-                int shares = Integer.valueOf(etShares.getText().toString());
-                setBuy(shares, quote.getLastPrice());
-                setSell(shares, quote.getLastPrice());
-            } else if(result == 0) {
+                update();
+            } else if (result == 0) {
                 Toast.makeText(getBaseContext(), "Error - Search for a stock first.", Toast.LENGTH_LONG).show();
-            } else if(result == 2){
+            } else if (result == 2) {
                 Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
             }
         }
     }
-
-
 }
