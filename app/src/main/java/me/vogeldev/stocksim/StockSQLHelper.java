@@ -1,16 +1,11 @@
 package me.vogeldev.stocksim;
 
-import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import android.widget.EditText;
 
-public class TodoListSQLHelper extends SQLiteOpenHelper {
+public class StockSQLHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "me.vogeldev.stocksim.db";
 
@@ -25,10 +20,11 @@ public class TodoListSQLHelper extends SQLiteOpenHelper {
     public static final String SHARES_COST = "COST";
     public static final String PLAYER_NAME = "NAME";
     public static final String PLAYER_MONEY = "MONEY";
+    public static final double INITIAL_MONEY = 10000;
 
     public static final String _ID = BaseColumns._ID;
 
-    public TodoListSQLHelper(Context context) {
+    public StockSQLHelper(Context context) {
         super(context, DB_NAME, null, 2);
     }
 

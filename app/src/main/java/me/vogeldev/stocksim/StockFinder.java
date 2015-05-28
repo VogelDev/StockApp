@@ -1,9 +1,6 @@
 package me.vogeldev.stocksim;
 
-
-
 import android.util.Log;
-
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 

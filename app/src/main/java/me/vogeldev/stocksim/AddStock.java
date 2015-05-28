@@ -2,6 +2,7 @@ package me.vogeldev.stocksim;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -48,6 +49,11 @@ public class AddStock extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_stock);
         init();
+        if(getIntent().hasExtra("symbol")){
+            String symbol = getIntent().getStringExtra("symbol");
+            etSearch.setText(symbol);
+            new StockLookup().execute(getIntent().getStringExtra("symbol"));
+        }
     }
 
     private void init() {
@@ -145,7 +151,7 @@ public class AddStock extends Activity implements OnClickListener {
     }
 
     private class StockSell extends AsyncTask<String, Integer, Long> {
-        TodoListSQLHelper sqlHelper;
+        StockSQLHelper sqlHelper;
         String error;
 
         protected Long doInBackground(String... symbols) {
@@ -155,7 +161,7 @@ public class AddStock extends Activity implements OnClickListener {
             if (quote == null)
                 return success;
 
-            sqlHelper = new TodoListSQLHelper(AddStock.this);
+            sqlHelper = new StockSQLHelper(AddStock.this);
             SQLiteDatabase sqLiteDatabase = sqlHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
 
@@ -178,12 +184,12 @@ public class AddStock extends Activity implements OnClickListener {
 
             values.clear();
 
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + quote.getSymbol() + "'", null, null, null, null);
+            Cursor cursor = sqLiteDatabase.query(StockSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + quote.getSymbol() + "'", null, null, null, null);
 
             quote.sellShares(shares);
 
-            String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
-                    " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + quote.getSymbol() + "'";
+            String deleteTodoItemSql = "DELETE FROM " + StockSQLHelper.TABLE_SHARES +
+                    " WHERE " + StockSQLHelper.SHARES_SYMBOL + " = '" + quote.getSymbol() + "'";
             sqLiteDatabase.execSQL(deleteTodoItemSql);
 
             if (quote.getShares() == 0) {
@@ -192,13 +198,13 @@ public class AddStock extends Activity implements OnClickListener {
             }
 
             //write the stock info to the database
-            values.put(TodoListSQLHelper.SHARES_NAME, quote.getName());
-            values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());
-            values.put(TodoListSQLHelper.SHARES_CURRENT, quote.getLastPrice());
-            values.put(TodoListSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
-            values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
-            values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
-            sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            values.put(StockSQLHelper.SHARES_NAME, quote.getName());
+            values.put(StockSQLHelper.SHARES_SYMBOL, quote.getSymbol());
+            values.put(StockSQLHelper.SHARES_CURRENT, quote.getLastPrice());
+            values.put(StockSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
+            values.put(StockSQLHelper.SHARES_COUNT, quote.getShares());
+            values.put(StockSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
+            sqLiteDatabase.insertWithOnConflict(StockSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
             cursor.close();
 
@@ -206,7 +212,7 @@ public class AddStock extends Activity implements OnClickListener {
 
         private void addMoney(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) {
             values.clear();
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
+            Cursor cursor = sqLiteDatabase.query(StockSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
 
             cursor.moveToFirst();
 
@@ -215,13 +221,13 @@ public class AddStock extends Activity implements OnClickListener {
 
             String name = cursor.getString(1);
 
-            String deleteOld = "DELETE FROM " + TodoListSQLHelper.TABLE_PLAYER +
-                    " WHERE " + TodoListSQLHelper.PLAYER_NAME + " = '" + name + "'";
+            String deleteOld = "DELETE FROM " + StockSQLHelper.TABLE_PLAYER +
+                    " WHERE " + StockSQLHelper.PLAYER_NAME + " = '" + name + "'";
             sqLiteDatabase.execSQL(deleteOld);
 
-            values.put(TodoListSQLHelper.PLAYER_NAME, name);
-            values.put(TodoListSQLHelper.PLAYER_MONEY, money);
-            sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            values.put(StockSQLHelper.PLAYER_NAME, name);
+            values.put(StockSQLHelper.PLAYER_MONEY, money);
+            sqLiteDatabase.insertWithOnConflict(StockSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
             cursor.close();
         }
@@ -241,19 +247,19 @@ public class AddStock extends Activity implements OnClickListener {
     }
 
     private class StockLookup extends AsyncTask<String, Integer, Long> {
-        TodoListSQLHelper sqlHelper;
+        StockSQLHelper sqlHelper;
 
         protected Long doInBackground(String... symbols) {
 
             String symbol = symbols[0].toUpperCase();
 
-            sqlHelper = new TodoListSQLHelper(AddStock.this);
+            sqlHelper = new StockSQLHelper(AddStock.this);
             SQLiteDatabase sqLiteDatabase = sqlHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.clear();
             long success = 0l;
 
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + symbol + "'", null, null, null, null);
+            Cursor cursor = sqLiteDatabase.query(StockSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + symbol + "'", null, null, null, null);
 
 
             quote = StockFinder.getQuote(symbol);
@@ -263,10 +269,10 @@ public class AddStock extends Activity implements OnClickListener {
 
             if (cursor.getCount() != 0) {
                 cursor.moveToFirst();
-                double price = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_CURRENT));
-                String trade = cursor.getString(cursor.getColumnIndex(TodoListSQLHelper.SHARES_LASTCHECK));
-                int count = cursor.getInt(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COUNT));
-                double total = cursor.getDouble(cursor.getColumnIndex(TodoListSQLHelper.SHARES_COST));
+                double price = cursor.getDouble(cursor.getColumnIndex(StockSQLHelper.SHARES_CURRENT));
+                String trade = cursor.getString(cursor.getColumnIndex(StockSQLHelper.SHARES_LASTCHECK));
+                int count = cursor.getInt(cursor.getColumnIndex(StockSQLHelper.SHARES_COUNT));
+                double total = cursor.getDouble(cursor.getColumnIndex(StockSQLHelper.SHARES_COST));
 
                 quote.setLastTrade(trade);
                 quote.setLastPrice(price);
@@ -293,7 +299,7 @@ public class AddStock extends Activity implements OnClickListener {
     }
 
     private class StockBuy extends AsyncTask<String, Integer, Long> {
-        TodoListSQLHelper sqlHelper;
+        StockSQLHelper sqlHelper;
         String error;
 
         protected Long doInBackground(String... symbols) {
@@ -303,7 +309,7 @@ public class AddStock extends Activity implements OnClickListener {
             if (quote == null)
                 return success;
 
-            sqlHelper = new TodoListSQLHelper(AddStock.this);
+            sqlHelper = new StockSQLHelper(AddStock.this);
             SQLiteDatabase sqLiteDatabase = sqlHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
 
@@ -327,26 +333,26 @@ public class AddStock extends Activity implements OnClickListener {
 
             values.clear();
 
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + quote.getSymbol() + "'", null, null, null, null);
+            Cursor cursor = sqLiteDatabase.query(StockSQLHelper.TABLE_SHARES, null, "SYMBOL = '" + quote.getSymbol() + "'", null, null, null, null);
 
             quote.addShares(shares, quote.getLastPrice());
 
             if (cursor.getCount() != 0) {
                 cursor.moveToFirst();
 
-                String deleteTodoItemSql = "DELETE FROM " + TodoListSQLHelper.TABLE_SHARES +
-                        " WHERE " + TodoListSQLHelper.SHARES_SYMBOL + " = '" + quote.getSymbol() + "'";
+                String deleteTodoItemSql = "DELETE FROM " + StockSQLHelper.TABLE_SHARES +
+                        " WHERE " + StockSQLHelper.SHARES_SYMBOL + " = '" + quote.getSymbol() + "'";
                 sqLiteDatabase.execSQL(deleteTodoItemSql);
             }
 
             //write the stock info to the database
-            values.put(TodoListSQLHelper.SHARES_NAME, quote.getName());
-            values.put(TodoListSQLHelper.SHARES_SYMBOL, quote.getSymbol());
-            values.put(TodoListSQLHelper.SHARES_CURRENT, quote.getLastPrice());
-            values.put(TodoListSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
-            values.put(TodoListSQLHelper.SHARES_COUNT, quote.getShares());
-            values.put(TodoListSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
-            sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            values.put(StockSQLHelper.SHARES_NAME, quote.getName());
+            values.put(StockSQLHelper.SHARES_SYMBOL, quote.getSymbol());
+            values.put(StockSQLHelper.SHARES_CURRENT, quote.getLastPrice());
+            values.put(StockSQLHelper.SHARES_LASTCHECK, quote.getLastTrade());
+            values.put(StockSQLHelper.SHARES_COUNT, quote.getShares());
+            values.put(StockSQLHelper.SHARES_COST, (quote.getTotalCost() / quote.getShares()));
+            sqLiteDatabase.insertWithOnConflict(StockSQLHelper.TABLE_SHARES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
             cursor.close();
 
@@ -354,7 +360,7 @@ public class AddStock extends Activity implements OnClickListener {
 
         private void subMoney(ContentValues values, SQLiteDatabase sqLiteDatabase, int shares) throws Exception {
             values.clear();
-            Cursor cursor = sqLiteDatabase.query(TodoListSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
+            Cursor cursor = sqLiteDatabase.query(StockSQLHelper.TABLE_PLAYER, null, null, null, null, null, null);
 
             cursor.moveToFirst();
 
@@ -368,13 +374,13 @@ public class AddStock extends Activity implements OnClickListener {
 
             String name = cursor.getString(1);
 
-            String deleteOld = "DELETE FROM " + TodoListSQLHelper.TABLE_PLAYER +
-                    " WHERE " + TodoListSQLHelper.PLAYER_NAME + " = '" + name + "'";
+            String deleteOld = "DELETE FROM " + StockSQLHelper.TABLE_PLAYER +
+                    " WHERE " + StockSQLHelper.PLAYER_NAME + " = '" + name + "'";
             sqLiteDatabase.execSQL(deleteOld);
 
-            values.put(TodoListSQLHelper.PLAYER_NAME, name);
-            values.put(TodoListSQLHelper.PLAYER_MONEY, money);
-            sqLiteDatabase.insertWithOnConflict(TodoListSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            values.put(StockSQLHelper.PLAYER_NAME, name);
+            values.put(StockSQLHelper.PLAYER_MONEY, money);
+            sqLiteDatabase.insertWithOnConflict(StockSQLHelper.TABLE_PLAYER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
             cursor.close();
         }
